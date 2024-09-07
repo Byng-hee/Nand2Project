@@ -1,0 +1,43 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/1/Mux8Way16.hdl
+/**
+ * 8-way 16-bit multiplexor:
+ * out = a if sel = 000
+ *       b if sel = 001
+ *       c if sel = 010
+ *       d if sel = 011
+ *       e if sel = 100
+ *       f if sel = 101
+ *       g if sel = 110
+ *       h if sel = 111
+ */
+CHIP Mux8Way16 {
+    IN a[16], b[16], c[16], d[16],
+       e[16], f[16], g[16], h[16],
+       sel[3];
+    OUT out[16];
+
+    PARTS:
+    Not(in=sel[2], out=notsel2);
+    Not(in=sel[1], out=notsel1);
+    Not(in=sel[0], out=notsel0);
+    And(a= sel[2], b=sel[1], out=sel21);
+    And(a= sel[0], b= sel21, out= sel0);
+    And(a= notsel0, b= sel21, out= sel1);
+    And(a= sel[2], b=sel[0], out=sel20);
+    And(a= notsel1, b= sel20, out= sel2);
+    And(a= sel[2], b=notsel1, out=sel2notsel1);
+    And(a= notsel0, b= sel2notsel1, out= sel3);
+    Mux16(a= a, b= h, sel= sel0, out= mux1);
+    Mux16(a= b, b= g, sel= sel1, out= mux2);
+    Mux16(a= c, b= f, sel= sel2, out= mux3);
+    Mux16(a= d, b= e, sel= sel3, out= mux4);
+    Xor(a = sel[0], b = sel[1], out = xsel01);
+    Xor(a = sel[2], b = sel[1], out = xsel21);
+    Mux16(a= mux1, b= mux2, sel= xsel01, out= muxmux12);
+    Mux16(a= mux4, b= mux3, sel= xsel01, out= muxmux34);
+    Mux16(a= muxmux12, b= muxmux34, sel= xsel21, out= out);
+    //// Replace this comment with your code.
+}

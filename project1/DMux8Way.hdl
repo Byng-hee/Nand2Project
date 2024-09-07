@@ -1,0 +1,57 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/1/DMux8Way.hdl
+/**
+ * 8-way demultiplexor:
+ * [a, b, c, d, e, f, g, h] = 
+ [in, 0,  0,  0,  0,  0,  0,  0] if sel = 000
+ [0, in,  0,  0,  0,  0,  0,  0] if sel = 001
+ [0,  0, in,  0,  0,  0,  0,  0] if sel = 010
+ [0,  0,  0, in,  0,  0,  0,  0] if sel = 011
+ [0,  0,  0,  0, in,  0,  0,  0] if sel = 100
+ [0,  0,  0,  0,  0, in,  0,  0] if sel = 101
+ [0,  0,  0,  0,  0,  0, in,  0] if sel = 110                            
+ [0,  0,  0,  0,  0,  0,  0, in] if sel = 111
+ */
+CHIP DMux8Way {
+    IN in, sel[3];
+    OUT a, b, c, d, e, f, g, h;
+
+    PARTS:
+    Not(in= sel[0], out= notsel0);
+    Not(in= sel[1], out= notsel1);
+    Not(in= sel[2], out= notsel2);
+    And(a= sel[2], b=sel[1], out=sel21);
+    And(a= sel[0], b= sel21, out= sel0);
+    And(a= notsel0, b= sel21, out= sel1);
+    And(a= sel[2], b=sel[0], out=sel20);
+    And(a= notsel1, b= sel20, out= sel2);
+    And(a= sel[2], b=notsel1, out=sel2notsel1);
+    And(a= notsel0, b= sel2notsel1, out= sel3);
+    DMux(in= in, sel= sel0, a= a1, b= h1);
+    DMux(in= in, sel= sel1, a= b1, b= g1);
+    DMux(in= in, sel= sel2, a= c1, b= f1);
+    DMux(in= in, sel= sel3, a= d1, b= e1);
+    Xor(a = sel[0], b = sel[1], out = xsel01);
+    Xor(a = sel[2], b = sel[1], out = xsel21);
+    Not(in= xsel01, out= notxsel0);
+    Not(in= xsel21, out= notxsel1);
+    And(a= a1, b= notxsel0, out= a2);
+    And(a= a2, b= notxsel1, out= a);
+    And(a= b1, b= xsel01, out= b2);
+    And(a= b2, b= notxsel1, out= b);
+    And(a= c1, b= xsel01, out= c2);
+    And(a= c2, b= xsel21, out= c);
+    And(a= d1, b= notxsel0, out= d2);
+    And(a= d2, b= xsel21, out= d);
+    And(a= e1, b= notxsel0, out= e2);
+    And(a= e2, b= xsel21, out= e);
+    And(a= f1, b= xsel01, out= f2);
+    And(a= f2, b= xsel21, out= f);
+    And(a= g1, b= xsel01, out= g2);
+    And(a= g2, b= notxsel1, out= g);
+    And(a= h1, b= notxsel0, out= h2);
+    And(a= h2, b= notxsel1, out= h);
+    //// Replace this comment with your code.
+}
