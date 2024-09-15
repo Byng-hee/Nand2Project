@@ -1,0 +1,29 @@
+// This file is part of the Nand2Tetris course.
+// RAM64: A 64-register memory. Each register is 16-bit wide.
+// The chip has a 6-bit address input and holds a 16-bit value at each address.
+// The load input determines whether to write the value at the given address.
+// If load==1, the in value is loaded into the selected register.
+// The out output always reflects the value stored at the selected register.
+
+CHIP RAM64 {
+    IN in[16], load, address[6];
+    OUT out[16];
+
+    PARTS:
+    // DMux8Way splits the load signal to select one of the 8 RAM8 blocks.
+    DMux8Way(in=load, sel=address[5..3], a = ram0_load, b=ram1_load, c=ram2_load, d=ram3_load, e=ram4_load,f
+=ram5_load, g=ram6_load, h=ram7_load);
+
+    // 8 RAM8 chips, each handling 8 addresses (3-bit address).
+    RAM8(in=in, load=ram0_load, address=address[2..0], out=out0);
+    RAM8(in=in, load=ram1_load, address=address[2..0], out=out1);
+    RAM8(in=in, load=ram2_load, address=address[2..0], out=out2);
+    RAM8(in=in, load=ram3_load, address=address[2..0], out=out3);
+    RAM8(in=in, load=ram4_load, address=address[2..0], out=out4);
+    RAM8(in=in, load=ram5_load, address=address[2..0], out=out5);
+    RAM8(in=in, load=ram6_load, address=address[2..0], out=out6);
+    RAM8(in=in, load=ram7_load, address=address[2..0], out=out7);
+
+    // Mux8Way16 selects the output of the correct RAM8 block.
+    Mux8Way16(a=out0, b=out1, c=out2, d=out3, e=out4, f=out5, g=out6, h=out7, sel=address[5..3], out=out);
+}
