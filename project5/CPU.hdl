@@ -35,22 +35,30 @@ CHIP CPU {
     //witeM은 instruction[15]=1 & instruction[3]=1 일때만 1
 	And(a= instruction[15], b=instruction[3], out=writeM);
 
-	//outM은 어떤 값에도 상관없이 그냥 ALU계산결과출력됨
-	//Mux16(a= instruction, b= result, sel= inst5, out= Amux);  //IN 값인 instruction과 ALU의 결과로 A에 저장될 값 비교
-	//Mux16(a= instruction, b= Amux, sel= instruction[15], out=realA);  //만일 IN이 A instruction이라면 주소값을 존중해줘야된다.
-	//ARegister(in= realA, load= true, out= outA);
+    //A-Mux기 구현
+    Not(in= instruction[15], out=inMuxsel );
+    Mux16(a= result, b= instruction, sel= inMuxsel, out= inA);
+    //Aregister 구현
+    And(a= inMuxsel, b= instruction[5], out= inAregload );
+    ARegister(in= inA, load= inAregload, out= Aout);
 
-	Mux16(a= instruction, b= result, sel= instruction[15], out=mxA);
-	Not(in= instruction[15], out=notinstruction15);
-	Or(a=notinstruction15, b=inst5, out=aload);
-	ARegister(in= mxA, load= aload, out=outA);
-	
-	Mux16(a= outA, b= inM, sel= instruction[12], out= AorM);
-	ALU(x= outD ,y=AorM ,zx= instruction[11] ,nx= instruction[10],
-		zy= instruction[9] ,ny= instruction[8] ,f= instruction[7],
-		no= instruction[6] ,out= result ,zr= ZR , ng= NG);
-	Bit(in= instruction[5], load= true, out= inst5);
-    Or16(a=result, b=false, out=outM); //instruction(t)와 result(t-1)을 비교하기 위해서는 inst5(t-1)이 필수적이다.
-	DRegister(in= result, load= instruction[4], out= outD);	
-    //// Replace this comment with your code.
+    //addressM구현
+    Or16(a= Aout, b= false, out[0..14]= addressM);
+
+    //PC구현
+    Not(in= reset, out= inPCinc);
+    Or(a= instruction[0], b= instruction[1], out=or01 );
+    Or(a= or01, b= instruction[2], out= isjump);
+    PC(in= Aout, load= isjump, inc= inPCinc, reset= reset, out[0..14]=pc);
+
+    //Dregister 구현
+    And(a= instruction[4], b= instruction[15], out= inDregload);
+    DRegister(in= result, load= inDregload, out= Dout);
+
+    //ALU 구현
+    Mux16(a= Aout, b= inM, sel= instruction[12], out= AorM);
+    ALU(x= Dout, y= AorM, zx= instruction[11], nx= instruction[10],
+        zy= instruction[9], ny= instruction[8], f= instruction[7],
+        no= instruction[6], out= result, zr= ZR, ng= NG);
+    Or16(a= result, b= false, out= outM);
 }
