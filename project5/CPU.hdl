@@ -1,0 +1,56 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/5/CPU.hdl
+/**
+ * The Hack Central Processing unit (CPU).
+ * Parses the binary code in the instruction input and executes it according to the
+ * Hack machine language specification. In the case of a C-instruction, computes the
+ * function specified by the instruction. If the instruction specifies to read a memory
+ * value, the inM input is expected to contain this value. If the instruction specifies
+ * to write a value to the memory, sets the outM output to this value, sets the addressM
+ * output to the target address, and asserts the writeM output (when writeM = 0, any
+ * value may appear in outM).
+ * If the reset input is 0, computes the address of the next instruction and sets the
+ * pc output to that value. If the reset input is 1, sets pc to 0.
+ * Note: The outM and writeM outputs are combinational: they are affected by the
+ * instruction's execution during the current cycle. The addressM and pc outputs are
+ * clocked: although they are affected by the instruction's execution, they commit to
+ * their new values only in the next cycle.
+ */
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset==1) or continue executing
+                         // the current program (reset==0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write to M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+    //witeM은 instruction[15]=1 & instruction[3]=1 일때만 1
+	And(a= instruction[15], b=instruction[3], out=writeM);
+
+	//outM은 어떤 값에도 상관없이 그냥 ALU계산결과출력됨
+	//Mux16(a= instruction, b= result, sel= inst5, out= Amux);  //IN 값인 instruction과 ALU의 결과로 A에 저장될 값 비교
+	//Mux16(a= instruction, b= Amux, sel= instruction[15], out=realA);  //만일 IN이 A instruction이라면 주소값을 존중해줘야된다.
+	//ARegister(in= realA, load= true, out= outA);
+
+	Mux16(a= instruction, b= result, sel= instruction[15], out=mxA);
+	Not(in= instruction[15], out=notinstruction15);
+	Or(a=notinstruction15, b=inst5, out=aload);
+	ARegister(in= mxA, load= aload, out=outA);
+	
+	Mux16(a= outA, b= inM, sel= instruction[12], out= AorM);
+	ALU(x= outD ,y=AorM ,zx= instruction[11] ,nx= instruction[10],
+		zy= instruction[9] ,ny= instruction[8] ,f= instruction[7],
+		no= instruction[6] ,out= result ,zr= ZR , ng= NG);
+	Bit(in= instruction[5], load= true, out= inst5);
+    Or16(a=result, b=false, out=outM); //instruction(t)와 result(t-1)을 비교하기 위해서는 inst5(t-1)이 필수적이다.
+	DRegister(in= result, load= instruction[4], out= outD);	
+    //// Replace this comment with your code.
+}
