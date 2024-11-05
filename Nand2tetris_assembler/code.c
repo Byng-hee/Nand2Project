@@ -3,171 +3,171 @@
 #include <stdbool.h>
 #include <string.h>
 
-const char* dest(const char* str, CommandType command){
-	const char dest_name[10];
+int dest(const char* str, CommandType command){
+	int dest_name;
 	if(command==C_COMMAND){
 		switch(str){
 		case 'M':
-			dest_name="001";
+			dest_name=0b001;
 			break;
 		case 'D':
-			dest_name="010";
+			dest_name=0b010;
 			break;
 		case 'MD':
-			dest_name="011";
+			dest_name=0b011;
 			break;
 		case 'A':
-			dest_name="100";
+			dest_name=0b100;
 			break;
 		case 'AM':
-			dest_name="101";
+			dest_name=0b101;
 			break;
 		case 'AD':
-			dest_name="110";
+			dest_name=0b110;
 			break;
 		case 'AMD':
-			dest_name="111";
+			dest_name=0b111;
 			break;
 		default:
-			dest_name="000";
+			dest_name=0b000;
 		}
 	}
 	else{
-		dest_name='\n';
+		dest_name=NULL;
 	}
 	return dest_name;
 }
 
-const char* comp(const char* str, CommandType command){
-	const char comp_name[10]; // 'dest'를 'comp'로 변경
+int comp(const char* str, CommandType command){
+	int comp_name;
 	if (command == C_COMMAND) {
 	    switch (str) {
 	        case '0':
-	            comp_name = "0.101010"; // 첫 번째 요소에 문자열 할당
+	            comp_name = 0b0101010;
 	            break;
 	        case '1':
-	            comp_name = "0.111111";
+	            comp_name = 0b0111111;
 	            break;
 	        case '-1':
-	            comp_name = "0.111010";
+	            comp_name = 0b0111010;
 	            break;
             case 'D':
-	            comp_name = "0.001100";
+	            comp_name = 0b0001100;
 	            break;
 	        case 'A':
-	            comp_name = "0.110000";
+	            comp_name = 0b0110000;
 	            break;
 	        case '!D':
-	            comp_name = "0.001101";
+	            comp_name = 0b0001101;
 	            break;
 	        case '!A':
-	            comp_name = "0.110001";
+	            comp_name = 0b0110001;
 	            break;
 	        case '-D':
-	            comp_name = "0.001111";
+	            comp_name = 0b0001111;
 	            break;
 	        case '-A':
-	            comp_name = "0.110011";
+	            comp_name = 0b0110011;
 	            break;
 	        case 'D+1':
-	            comp_name = "0.011111";
+	            comp_name = 0b0011111;
 	            break;
 	        case 'A+1':
-	            comp_name = "0.110111";
+	            comp_name = 0b0110111;
 	            break;
 	        case 'D-1':
-	            comp_name = "0.001110";
+	            comp_name = 0b0001110;
 	            break;
 	        case 'A-1':
-	            comp_name = "0.110010";
+	            comp_name = 0b0110010;
 	            break;
 	        case 'D+A':
-	            comp_name = "0.000010";
+	            comp_name = 0b0000010;
 	            break;
 	        case 'D-A':
-	            comp_name = "0.010011";
+	            comp_name = 0b0010011;
 	            break;
 	        case 'A-D':
-	            comp_name = "0.000111";
+	            comp_name = 0b0000111;
 	            break;
 	        case 'D&A':
-	            comp_name = "0.000000";
+	            comp_name = 0b0000000;
 	            break;
 	        case 'D|A':
-	            comp_name = "0.010101";
+	            comp_name = 0b0010101;
 	            break;
 	        case 'M':
-	            comp_name = "1.110000";
+	            comp_name = 0b1110000;
 	            break;
 	        case '!M':
-	            comp_name = "1.110001";
+	            comp_name = 0b1110001;
 	            break;
 	        case '-M':
-	            comp_name = "1.110011";
+	            comp_name = 0b1110011;
 	            break;
 	        case 'M+1':
-	            comp_name = "1.110111";
+	            comp_name = 0b1110111;
 	            break;
 	        case 'M-1':
-	            comp_name = "1.110010";
+	            comp_name = 0b1110010;
 	            break;
 	        case 'D+M':
-	            comp_name = "1.000010";
+	            comp_name = 0b1000010;
 	            break;
 	        case 'D-M':
-	            comp_name = "1.010011";
+	            comp_name = 0b1010011;
 	            break;
 	        case 'M-D':
-	            comp_name = "1.000111";
+	            comp_name = 0b1000111;
 	            break;
 	        case 'D&M':
-	            comp_name = "1.000000";
+	            comp_name = 0b1000000;
 	            break;
 	        case 'D|M':
-	            comp_name = "1.010101";
+	            comp_name = 0b1010101;
 	            break;
 	        default:
-	            comp_name = '\0';
+	            comp_name = NULL;
 	    }
 	}
 	else {
-	    comp_name = "\0";
+	    comp_name = NULL;
 	}
 	return comp_name;
 }
 
 
-const char* jump(const char* str, CommandType c_command){
-	const char jump_name[10]; // 'dest'를 'jump'로 변경
+int jump(const char* str, CommandType c_command){
+	int jump_name;
 	if (c_command == C_COMMAND) {
 	    switch (str) {
 	        case "JGT":
-	            jump_name = "001"; // 배열의 인덱스를 사용해야 함
+	            jump_name = 0b001;
 	            break;
 	        case "JEQ":
-	            jump_name = "010";
+	            jump_name = 0b010;
 	            break;
 	        case "JGE":
-	            jump_name = "011";
+	            jump_name = 0b011;
 	            break;
 	        case "JLT":
-	            jump_name = "100";
+	            jump_name = 0b100;
 	            break;
 	        case "JNE":
-	            jump_name = "101";
+	            jump_name = 0b101;
 	            break;
 	        case "JLE":
-	            jump_name = "110";
+	            jump_name = 0b110;
 	            break;
 	        case "JMP":
-	            jump_name = "111";
+	            jump_name = 0b111;
 	            break;
 	        default:
-	            jump_name = "000";
+	            jump_name = 0b000;
 	    }
 	} else {
-	    jump_name = '\0';
+	    jump_name = NULL;
 	}
-	return jump_name; // 반환값도 배열의 첫 번째 요소로 수정
+	return jump_name;
 
 }

@@ -52,19 +52,31 @@ int main(int argc, char *argv[]) {
 }
 
 
+
 void parser1(FILE* open, FILE* write){
-    struct reg REG;
-    
+    reg REG;
     char line[50];
-    char buffer[256];
-    int I_register;
     while(fgets(line, 50, open)){
         if( symbol(line ,get_command_type(line)) != NULL){
-            I_register = atoi(symbol(line ,get_command_type(line)))
-            buffer = C_COMPUTING(line,get_command_type(line));
+            REG.I = atoi(symbol(line ,get_command_type(line)))
+            binaryAddress(REG.I, REG.address);
+            size_t written = fwrite(&REG.address, sizeof(int), 16, write);
+            if(wittern != 16){
+                printf('file witer error');
+            }
+            else{
+                printf('write good');
+            }
         }
         else{
-            //C_COMMAND일 경우를 처리하는 코드
+            REG.address = C_COMPUTING(line);      //C_COMMAND일 경우를 처리하는 코드
+            size_t written = fwrite(&REG.address, sizeof(int), 16, write);
+            if(wittern != 16){
+                printf('file witer error');
+            }
+            else{
+                printf('write good');
+            }
         }
     }
 }

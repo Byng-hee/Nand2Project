@@ -6,15 +6,17 @@
 #include "code.c"
 
 typedef struct REGISTER{
-    int Memory[43256];
-    int M; 
-    int I, D;
+    static int Memory[43256];
+    static int address[16];
+    static int M; 
+    static int I, D;
 }reg;
 
 typedef enum { A_COMMAND, C_COMMAND, L_COMMAND } CommandType;
 
 CommandType get_command_type(const char* str);
 char* symbol(char* str, CommandType AorL);
-const char* C_COMPUTING(char* line, CommandType ALC);
+int* C_COMPUTING(char* line);
+void binaryAddress(int n, int *address);
 
 #endif
