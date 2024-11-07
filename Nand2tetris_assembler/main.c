@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 void parser1(FILE* open, FILE* write){
     Reg REG;
     char line[50];
-    REG.address = (char *)malloc(16);
+    REG.address = (char *)malloc(17);
 
     while(fgets(line, 50, open) != NULL ){
         if (line[strlen(line) - 1] == '\n') {
@@ -68,7 +68,7 @@ void parser1(FILE* open, FILE* write){
             binaryAddress(REG.I, REG.address);  //address에 I값이 저장됨
             printf("binaryAddress value is : %s\n", REG.address);
             fprintf(write, "%s\n", REG.address);
-            
+
         }
         else{
             printf("%s\n", line);
