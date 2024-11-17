@@ -3,40 +3,61 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
 #include "parser.h"
 #include "code.h"
 
 CommandType get_command_type(const char* str) {
 
     // A_COMMAND는 '@'로 시작
-    if (str[0] == '@') {
-        return A_COMMAND;
+    if(strchr(str, '/') != NULL || str[0] == '\n'){
+        return IGNORE;
     }
-    // L_COMMAND는 '('로 시작
-    else if (str[0] == '(') {
-        return L_COMMAND;
-    }
-    // 나머지는 C_COMMAND로 간주
-    else {
-        return C_COMMAND;
+    else{
+        if (strchr(str, '@')) {
+            return A_COMMAND;
+        }
+        // L_COMMAND는 '('로 시작
+        else if (strchr(str, '(')) {
+            return L_COMMAND;
+        }
+        // 나머지는 C_COMMAND로 간주
+        else {
+            return C_COMMAND;
+        }
     }
 }
 
 char* symbol(char* str, CommandType AorL){
+    // 문자열 앞의 공백을 제거
+    while (*str && isspace((unsigned char)*str)) {
+        str++;
+    }
+
+    // 문자열 뒤의 공백을 제거
+    char *end = str + strlen(str) - 1;
+    while (end > str && isspace((unsigned char)*end)) {
+        end--;
+    }
+
+    // 끝을 null 문자로 설정하여 문자열 크기를 조정
+    *(end + 1) = '\0';
+
+
 	static char symbol_name[30];
-	size_t end = strlen(str);
-	if(AorL==A_COMMAND){
-		for(size_t i=1; i<end; i++){
+	size_t end_str = strlen(str);
+	if((AorL==A_COMMAND) && (str != NULL)){
+		for(size_t i=1; i<end_str; i++){
 			symbol_name[i-1] = str[i];
 		}
-		symbol_name[end] = '\0';
+		symbol_name[end_str] = '\0';
 		return symbol_name;
 	}
-	else if(AorL==L_COMMAND){
-		for(size_t i=1; i<end-1; i++){
+	else if((AorL==L_COMMAND) && (str != NULL)){
+		for(size_t i=1; i<end_str-2; i++){
 			symbol_name[i-1] = str[i];
 		}
-		symbol_name[end-1] = '\0';
+		symbol_name[end_str-1] = '\0';
 		return symbol_name;
 	}
 	else{
