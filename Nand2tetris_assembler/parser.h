@@ -14,9 +14,10 @@ char* symbol(char* str, CommandType AorL);
 void C_COMPUTING(char* line, char* address);
 void binaryAddress(int , char* address);
 
-typedef struct{
+typedef struct SymbolTable{
     char symbol_name[256];
     int symbol_address;
+    struct SymbolTable* next;
 }SymbolTable;
 
 //bool has_symbol_contains();

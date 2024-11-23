@@ -8,24 +8,28 @@
 #include "code.h"
 
 CommandType get_command_type(const char* str) {
-
-    // A_COMMAND는 '@'로 시작
-    if(strchr(str, '/') != NULL || str[0] == '\n'){
+    // 1. 빈 줄 처리: 줄의 첫 문자가 '\0' (빈 줄)일 경우
+    if (str[0] == '\n' || str[0] == '\0') {
         return IGNORE;
     }
-    else{
-        if (strchr(str, '@')) {
-            return A_COMMAND;
-        }
-        // L_COMMAND는 '('로 시작
-        else if (strchr(str, '(')) {
-            return L_COMMAND;
-        }
-        // 나머지는 C_COMMAND로 간주
-        else {
-            return C_COMMAND;
-        }
+
+    // 2. 주석 처리: 문자열에서 '//'가 첫 번째 문자로 나타나면 주석
+    if (strchr(str,'/') != NULL) {
+        return IGNORE;
     }
+
+    // 3. A_COMMAND: '@'로 시작
+    if (strchr(str,'@')) {
+        return A_COMMAND;
+    }
+
+    // 4. L_COMMAND: '('로 시작
+    if (strchr(str,'(')) {
+        return L_COMMAND;
+    }
+
+    // 5. C_COMMAND: 나머지 모든 경우
+    return C_COMMAND;
 }
 
 char* symbol(char* str, CommandType AorL){
@@ -54,23 +58,24 @@ char* symbol(char* str, CommandType AorL){
 		return symbol_name;
 	}
 	else if((AorL==L_COMMAND) && (str != NULL)){
-		for(size_t i=1; i<end_str-2; i++){
+		for(size_t i=1; i<end_str-1; i++){
 			symbol_name[i-1] = str[i];
 		}
-		symbol_name[end_str-1] = '\0';
+		symbol_name[end_str-2] = '\0';
 		return symbol_name;
 	}
 	else{
 		return NULL;
 	}
 }
+
 void binaryAddress(int n, char *address) {
     for (int i = 15; i >= 0; i--) {
         int bit = (n >> i) & 1;      // n의 i번째 비트를 추출
         address[15 - i] = bit + '0'; // int 값을 문자로 변환하여 저장
     }
     address[16] = '\0';  // 문자열 끝에 NULL 문자 추가
-	printf("Binary address: %s\n", address);
+	//printf("Binary address: %s\n", address);
 }
 
 void C_COMPUTING(char* line, char *address){
