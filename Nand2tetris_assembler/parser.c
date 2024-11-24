@@ -54,7 +54,7 @@ char* symbol(char* str, CommandType AorL){
 		for(size_t i=1; i<end_str; i++){
 			symbol_name[i-1] = str[i];
 		}
-		symbol_name[end_str] = '\0';
+		symbol_name[end_str-1] = '\0';
 		return symbol_name;
 	}
 	else if((AorL==L_COMMAND) && (str != NULL)){
@@ -79,6 +79,20 @@ void binaryAddress(int n, char *address) {
 }
 
 void C_COMPUTING(char* line, char *address){
+    // 문자열 앞의 공백을 제거
+    while (*line && isspace((unsigned char)*line)) {
+        line++;
+    }
+
+    // 문자열 뒤의 공백을 제거
+    char *end = line + strlen(line) - 1;
+    while (end > line && isspace((unsigned char)*end)) {
+        end--;
+    }
+
+    // 끝을 null 문자로 설정하여 문자열 크기를 조정
+    *(end + 1) = '\0';
+
     char *dot1 = strrchr(line, '=');
     char *dot2 = strrchr(line, ';');
     char *dest_part, *comp_part, *jump_part;

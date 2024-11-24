@@ -125,7 +125,6 @@ void parser2(FILE* open, FILE* write, SymbolTable* recoder){
             line[strlen(line) - 1] = '\0';
         }
         char *tmp = symbol(line, get_command_type(line));
-
         if(get_command_type(line) == A_COMMAND){
             if(tmp[0] >=48 && tmp[0] <=57 ){
                 REG.I = atoi(tmp);
@@ -144,7 +143,7 @@ void parser2(FILE* open, FILE* write, SymbolTable* recoder){
             }
 
             binaryAddress(REG.I, REG.address);  //address에 I값이 저장됨
-            //printf("binaryAddress value is : %s\n", REG.address);
+            printf("binaryAddress value is : %s\n", REG.address);
             printf("A line is : %s\n", line);
             fprintf(write, "%s\n", REG.address);
 
@@ -152,7 +151,7 @@ void parser2(FILE* open, FILE* write, SymbolTable* recoder){
         else if(get_command_type(line) == L_COMMAND){}
         else if(get_command_type(line) == C_COMMAND){
             C_COMPUTING(line, REG.address);      //C_COMMAND일 경우를 처리하는 코드
-            printf("line : %s, C_COMPUTING value is : %s\n", line, REG.address);
+            //printf("line : %s, C_COMPUTING value is : %s\n", line, REG.address);
             fprintf(write, "%s\n", REG.address);
         }
     }
