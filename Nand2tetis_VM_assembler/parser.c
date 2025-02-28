@@ -4,7 +4,46 @@
 #include <string.h>
 #include <stdlib.h>
 
-void parser(FILE *open, FILE *write, segment *s1){
+segment_B *funcList = NULL;
+
+segment_B* createSegment_B(const char* name, segment_A* s1, int value){
+    segment_B *newSeg_B = (segment_B*)(malloc(sizeof(segment_B)));
+    if(!newSeg_B){
+        perror("메모리할당 실패!");
+        exit(1);
+    }
+    strcpy(newSeg_B->name, name);
+    newSeg_B->sp = value;        // stack의 최상위 위치를 가리킨다.     
+    s1->RAM[0] = newSeg_B->sp; // stack의 최상위 위치를 가리킨다.     SP
+    s1->RAM[1] = value+10; // LOCAL세그먼트 기저 주소 가리킨다.      LCL
+    s1->RAM[2] = value+20; // argument 세그먼트 기저 주소 가리킨다.  ARG
+    s1->RAM[3] = value+30; // THIS세그먼트의 시작주소를 가리킨다.    THIS
+    s1->RAM[4] = value+40; // THAT세그먼트의 시작주소를 가리킨다.    THAT
+    newSeg_B->temp = &(s1->RAM[5]); // RAM의 [5] - [12] 까지 할당     
+    newSeg_B->next = NULL;
+    return newSeg_B;
+}
+void addSegment_B(segment_B* s2){
+    s2->next = funcList;
+    funcList = s2;
+}
+void free_segment(segment_B *funcList){
+    segment_B* current = funcList;
+    segment_B* nextNode = NULL;
+
+    while (current != NULL) {
+        nextNode = current->next;  // 다음 노드 저장
+        free(current);  // 현재 노드 메모리 해제
+        current = nextNode;  // 다음 노드로 이동
+    }
+}
+
+
+void parser(FILE *open, FILE *write, segment_A *s1){
+    int value = 10;
+
+    char* argument[2];
+    int i;
 
     if (open == NULL) {
         // 파일을 열 수 없을 경우
@@ -13,40 +52,87 @@ void parser(FILE *open, FILE *write, segment *s1){
     }
 
     char line[256];
+    segment_B *s2 = createSegment_B("basic", s1, value);
+    addSegment_B(s2);
 
     while (fgets(line, sizeof(line), open) != NULL) {
-        commandtype c_word;
+            commandtype c_word;
+            i = 0;
 
-        if( (line[0] == '/' ) || (line[0] == ' ') ){
-            continue;
-        }
-        // 줄 끝에 있는 개행 문자 제거
-        line[strcspn(line, "\n")] = '\0';
+            if( (line[0] == '/' ) || ( strspn(line, " \t\r\n") == strlen(line) ) ){
+                continue;
+            }
+            // 줄 끝에 있는 개행 문자 제거
+            line[strcspn(line, "\n")] = '\0';
+ 
+            // 문자열 분할
+            char *token = strtok(line, " ");  // 첫 번째 토큰 얻기
+            c_word = find_commandtype(token);
 
-        // 문자열 분할
-        char *token = strtok(line, " ");  // 첫 번째 토큰 얻기
-        c_word = find_commandtype(token);
-        
-        char* argument[2];
-        int i = 0;
+            if( (c_word == C_FUNCTION)  && 0 ){
+                segment_B *s2 = createSegment_B(token, s1, value);
+                addSegment_B(s2);
+                value = value + 50;
+            }
 
-        if( c_word == C_FUNCTION ){
-            token = strtok(NULL, " ");
             switch (c_word) {
                 case C_PUSH:
                     while (token != NULL) {
                         token = strtok(NULL, " ");  // 공백 기준으로 다음 토큰 얻기
                         argument[i++] = token;
                     }
-                    push(argument[0], argument[1], *s1);
+                    push(argument[0], argument[1], s1, funcList);
+                    fprintf(write, "@%d\n", atoi(argument[1]));
+                    fprintf(write, "D=A\n");
+                    fprintf(write, "@SP\n");
+                    fprintf(write, "A=M\n");
+                    fprintf(write, "M=D\n");
+                    fprintf(write, "@SP\n");
+                    fprintf(write, "M=M+1\n");
                     break;
+                case C_POP :
+                    break;
+                case C_ARITHMEIC :
+                    if ( strcmp(token, "add") == 0 ){
+                        segment_B *current = funcList;
+                        add(s1, current);
+                        printf("ADD Result : %d\n", s1->RAM[(current->sp)-1]);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=D+M\n");
+                        fprintf(write, "M=D\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M+1\n");
+                    }
+                    else if( strcmp(token, "sub") == 0 ){
+                        sub();
+                    }
+                    else if( strcmp(token, "neg") == 0 ){
+                        neg();
+                    }
+                    else if( strcmp(token, "and") == 0 ){
+                        and();
+                    }                   
+                    else if( strcmp(token, "or") == 0 ){
+                        or();
+                    }                    
+                    else if( strcmp(token, "not") == 0 ){
+                        not();
+                    }
+                    else{
+                        exit(1);
+                    }
                 default : 
                     break;
             }
-
-        }
-
     }
+    printf("%d, %d", s1->RAM[s2->sp], s1->RAM[(s2->sp)-1]);
+    free_segment(funcList);
     
 }
 

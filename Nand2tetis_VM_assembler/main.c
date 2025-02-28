@@ -13,8 +13,10 @@ int main(int argc, char *argv[]){
 
     // 파일을 읽기 모드로 열기 (생성)
     FILE *assembely_file = fopen(argv[1], "r");
+
     // 파일을 쓰기 모드로 열기 (생성)
     FILE* machine_language_file = fopen(outputFileName, "w");
+
     if (machine_language_file == NULL || assembely_file == NULL) {
         perror("machine_language_file && assembely_file open failure");
         exit(1);
@@ -23,6 +25,9 @@ int main(int argc, char *argv[]){
     segment_A *s1 = (segment_A*)malloc(sizeof(segment_A));
 
     parser(assembely_file,machine_language_file, s1);
+
     free(s1);
+    free(machine_language_file);
+    free(assembely_file);
     return 0;
 }
