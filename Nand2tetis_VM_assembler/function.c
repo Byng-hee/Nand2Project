@@ -53,17 +53,42 @@ void push(char *arg1, char * arg2, segment_A* s1, segment_B* s2){
         s1->RAM[s2->sp++] = s1->static_memory[v];
     }
     else{
-        fprintf(stderr, "잘못된 인자값입니다.");
+        perror("HOLLY SHIT_PUSH_ERROR!! \n");
+        exit(1);
     }
     s1->RAM[0] = s2->sp;
 }
-
 void pop(char *arg1, char * arg2, segment_A* s1, segment_B* s2){
- /*   int v = atoi(arg2);
-    if ( (strcmp(arg1, "constant") == 0) ){
-        s1->RAM[s1->sp++] = v;
+    int v = atoi(arg2);
+    if(strcmp(arg1, "local") == 0){
+        s2->sp--;
+        s2->local[v] = s1->RAM[s2->sp];
     }
-*/
+    else if(strcmp(arg1, "argumnet") == 0){
+        s2->sp--;
+        s2->argumnet[v] = s1->RAM[s2->sp];
+    }
+    else if(strcmp(arg1, "that") == 0){
+        s2->sp--;
+        s2->that[v] = s1->RAM[s2->sp];
+    }
+    else if(strcmp(arg1, "this") == 0){
+        s2->sp--;
+        s2->this[v] = s1->RAM[s2->sp];
+    }
+    else if(strcmp(arg1, "temp") == 0){
+        s2->sp--;
+        s2->temp[v] = s1->RAM[s2->sp];
+    }
+    else if(strcmp(arg1, "static") == 0){
+        s2->sp--;
+        s1->static_memory[v] = s1->RAM[s2->sp];
+    }
+    else{
+        perror("HOLLY SHIT_POP_ERROR!! \n");
+        exit(1);
+    }
+    s1->RAM[0] = s2->sp;
 }
 void add(segment_A* s1, segment_B* s2){
     int temp = s1->RAM[(s2->sp--)-1];
@@ -71,27 +96,61 @@ void add(segment_A* s1, segment_B* s2){
     sum = sum + temp;
     s1->RAM[s2->sp++] = sum;
 }
-void sub(){
-
+void sub(segment_A* s1, segment_B* s2){
+    int temp = s1->RAM[(s2->sp--)-1];
+    int sub = s1->RAM[(s2->sp--)-1];
+    sub = sub - temp;
+    s1->RAM[s2->sp++] = sub;
 }
-void neg(){
-
+void neg(segment_A* s1, segment_B* s2){
+    int temp = s1->RAM[(s2->sp)-1];
+    temp = ~temp + 1;
+    s1->RAM[(s2->sp)-1] = temp;
 }
-void eq(){
-
+void eq(segment_A* s1, segment_B* s2){
+    int temp1 = s1->RAM[(s2->sp--)-1];
+    int temp2 = s1->RAM[(s2->sp--)-1];
+    if(temp1 == temp2){
+        s1->RAM[s2->sp++] = 1;
+    }
+    else{
+        s1->RAM[s2->sp++] = 0;
+    }
 }
-void gt(){
-
+void gt(segment_A* s1, segment_B* s2){
+    int temp1 = s1->RAM[(s2->sp--)-1];
+    int temp2 = s1->RAM[(s2->sp--)-1];
+    if(temp1 >= temp2){
+        s1->RAM[s2->sp++] = 1;
+    }
+    else{
+        s1->RAM[s2->sp++] = 0;
+    }
 }
-void lt(){
-
+void lt(segment_A* s1, segment_B* s2){
+    int temp1 = s1->RAM[(s2->sp--)-1];
+    int temp2 = s1->RAM[(s2->sp--)-1];
+    if(temp1 <= temp2){
+        s1->RAM[s2->sp++] = 1;
+    }
+    else{
+        s1->RAM[s2->sp++] = 0;
+    }
 }
-void and(){
-
+void and(segment_A* s1, segment_B* s2){
+    int temp = s1->RAM[(s2->sp--)-1];
+    int sum = s1->RAM[(s2->sp--)-1];
+    sum = sum & temp;
+    s1->RAM[s2->sp++] = sum;
 }
-void or(){
-
+void or(segment_A* s1, segment_B* s2){
+    int temp = s1->RAM[(s2->sp--)-1];
+    int sum = s1->RAM[(s2->sp--)-1];
+    sum = sum | temp;
+    s1->RAM[s2->sp++] = sum;
 }
-void not(){
-
+void not(segment_A* s1, segment_B* s2){
+    int temp = s1->RAM[(s2->sp--)-1];
+    temp =  ~temp;
+    s1->RAM[s2->sp++] = temp;
 }

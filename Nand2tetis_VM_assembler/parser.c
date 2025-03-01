@@ -44,6 +44,7 @@ void parser(FILE *open, FILE *write, segment_A *s1){
 
     char* argument[2];
     int i;
+    int repeat = 0;
 
     if (open == NULL) {
         // 파일을 열 수 없을 경우
@@ -91,6 +92,25 @@ void parser(FILE *open, FILE *write, segment_A *s1){
                     fprintf(write, "M=M+1\n");
                     break;
                 case C_POP :
+                    while (token != NULL) {
+                        token = strtok(NULL, " ");  // 공백 기준으로 다음 토큰 얻기
+                        argument[i++] = token;
+                    }
+                    pop(argument[0], argument[1], s1, funcList);
+                    fprintf(write, "@%d\n", atoi(argument[1]));
+                    fprintf(write, "D=A\n");
+                    fprintf(write, "@ARG\n");
+                    fprintf(write, "A=M\n");
+                    fprintf(write, "D=D+A\n");
+                    fprintf(write, "@13\n");
+                    fprintf(write, "M=D\n");
+                    fprintf(write, "@SP\n");
+                    fprintf(write, "M=M-1\n");
+                    fprintf(write, "A=M\n");
+                    fprintf(write, "D=M\n");
+                    fprintf(write, "@13\n");
+                    fprintf(write, "A=M\n");
+                    fprintf(write, "M=D\n");
                     break;
                 case C_ARITHMEIC :
                     if ( strcmp(token, "add") == 0 ){
@@ -110,28 +130,170 @@ void parser(FILE *open, FILE *write, segment_A *s1){
                         fprintf(write, "M=M+1\n");
                     }
                     else if( strcmp(token, "sub") == 0 ){
-                        sub();
+                        segment_B *current = funcList;
+                        sub(s1, current);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=D-M\n");
+                        fprintf(write, "M=D\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M+1\n");
                     }
                     else if( strcmp(token, "neg") == 0 ){
-                        neg();
+                        segment_B *current = funcList;
+                        neg(s1, current);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M\n");
+                        fprintf(write, "D=!D\n");
+                        fprintf(write, "M=D\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M+1\n");
                     }
                     else if( strcmp(token, "and") == 0 ){
-                        and();
-                    }                   
+                        segment_B *current = funcList;
+                        and(s1, current);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "M=M&D\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M+1\n");
+                    }
                     else if( strcmp(token, "or") == 0 ){
-                        or();
-                    }                    
+                        segment_B *current = funcList;
+                        or(s1, current);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "M=M|D\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M+1\n");
+                    }
                     else if( strcmp(token, "not") == 0 ){
-                        not();
+                        segment_B *current = funcList;
+                        not(s1, current);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "A=M-1\n");
+                        fprintf(write, "M=!M\n");
                     }
                     else{
+                        printf("NOT RUN!!\n");
                         exit(1);
                     }
+                    break;
+                case C_IF :
+                    if( strcmp(token, "eq") == 0 ){
+                        segment_B *current = funcList;
+                        eq(s1, current);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=D-M\n");
+                        fprintf(write, "@EQ_TRUE%d", repeat);
+                        fprintf(write, "D;JEQ");
+                        fprintf(write, "@SP");
+                        fprintf(write, "A=M");
+                        fprintf(write, "M=0");  // FALSE를 stack의 최상단에 저장! FALSE == 0
+                        fprintf(write, "@CONTINUE%d", repeat);
+                        fprintf(write, "0;JMP");
+                        fprintf(write, "(EQ_TRUE%d)", repeat);
+                        fprintf(write, "@SP");
+                        fprintf(write, "A=M");
+                        fprintf(write, "M=-1"); // TRUE면 -1저장한다(모든 비트가 1인값)
+                        fprintf(write, "(CONTINUE%d)\n", repeat);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M+1\n");
+                        repeat++;
+                        printf("I'm GOING LT\n");
+                        
+                    }
+                    else if( strcmp(token, "gt") == 0 ){
+                        segment_B *current = funcList;
+                        gt(s1, current);
+                        eq(s1, current);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M-D\n");
+                        fprintf(write, "@GT_TRUE%d", repeat);
+                        fprintf(write, "D;JGT");
+                        fprintf(write, "@SP");
+                        fprintf(write, "A=M");
+                        fprintf(write, "M=0");  // FALSE를 stack의 최상단에 저장! FALSE == 0
+                        fprintf(write, "@CONTINUE%d", repeat);
+                        fprintf(write, "0;JMP");
+                        fprintf(write, "(GT_TRUE%d)", repeat);
+                        fprintf(write, "@SP");
+                        fprintf(write, "A=M");
+                        fprintf(write, "M=-1"); // TRUE면 -1저장한다(모든 비트가 1인값)
+                        fprintf(write, "(CONTINUE%d)\n", repeat);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M+1\n");
+                        repeat++;
+                        printf("I'm GOING LT\n");
+                        
+                    }
+                    else if( strcmp(token, "lt") == 0 ){
+                        segment_B *current = funcList;
+                        lt(s1, current);
+                        eq(s1, current);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M\n");
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M-1\n");
+                        fprintf(write, "A=M\n");
+                        fprintf(write, "D=M-D\n");
+                        fprintf(write, "@LT_TRUE%d", repeat);
+                        fprintf(write, "D;JLT");
+                        fprintf(write, "@SP");
+                        fprintf(write, "A=M");
+                        fprintf(write, "M=0");  // FALSE를 stack의 최상단에 저장! FALSE == 0
+                        fprintf(write, "@CONTINUE%d", repeat);
+                        fprintf(write, "0;JMP");
+                        fprintf(write, "(LT_TRUE%d)", repeat);
+                        fprintf(write, "@SP");
+                        fprintf(write, "A=M");
+                        fprintf(write, "M=-1"); // TRUE면 -1저장한다(모든 비트가 1인값)
+                        fprintf(write, "(CONTINUE%d)\n", repeat);
+                        fprintf(write, "@SP\n");
+                        fprintf(write, "M=M+1\n");
+                        repeat++;
+                        printf("I'm GOING LT\n");
+                    }
+                    else{
+                        printf("NOT RUN!!\n");
+                        exit(1);
+                    }
+                    break;
                 default : 
                     break;
             }
     }
-    printf("%d, %d", s1->RAM[s2->sp], s1->RAM[(s2->sp)-1]);
     free_segment(funcList);
     
 }
