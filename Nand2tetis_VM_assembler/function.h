@@ -22,6 +22,7 @@ typedef struct segment_B{
     struct segment_B *next; 
 }segment_B;
 
+
 char* make_outputfilename(char* argv);      // 작성할 파일의 파일명을 만든다. ex) "병희.vm" -> "병희.asm"으로 변환
 void pop(char *arg1, char * arg2, segment_A* s1, segment_B* s2);     // stack에 arg1[arg2]위치의 값을 저장한다. sp++된다.
 void push(char *arg1, char * arg2, segment_A* s1, segment_B* s2);                 // stack에서 값을 빼서 arg1[arg2]위치에 저장한다.

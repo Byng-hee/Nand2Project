@@ -8,7 +8,7 @@ char* make_outputfilename(char* argv){
     char *outputFileName = (char *)malloc(100);
 
     if (dot != NULL) {
-        // '.'이 있는 경우, 확장자 제외한 파일 이름의 길이 계산
+        // '.'이 있는 경우, 확장자 제외한 파일 이름의 길이 계산 
         size_t length = dot - argv;
         char *dot1 = strrchr(argv, '\\');
         size_t length2 = dot1 - argv + 1;

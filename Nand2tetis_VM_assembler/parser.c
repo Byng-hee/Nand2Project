@@ -4,8 +4,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-segment_B *funcList = NULL;
 
+segment_B *funcList_head = NULL;
+segment_B *funcList_tail = NULL;
 segment_B* createSegment_B(const char* name, segment_A* s1, int value){
     segment_B *newSeg_B = (segment_B*)(malloc(sizeof(segment_B)));
     if(!newSeg_B){
@@ -23,9 +24,14 @@ segment_B* createSegment_B(const char* name, segment_A* s1, int value){
     newSeg_B->next = NULL;
     return newSeg_B;
 }
-void addSegment_B(segment_B* s2){
-    s2->next = funcList;
-    funcList = s2;
+void addSegment_B(segment_B** s2){
+    if (!funcList_head) {
+        funcList_head = *s2;
+        funcList_tail = *s2;
+    } else {
+        funcList_tail->next = *s2;
+        funcList_tail = *s2;
+    }
 }
 void free_segment(segment_B *funcList){
     segment_B* current = funcList;
@@ -39,7 +45,7 @@ void free_segment(segment_B *funcList){
 }
 
 
-void parser(FILE *open, FILE *write, segment_A *s1){
+void parser(FILE *open, FILE *write, segment_A* s1){
     int value = 10;
 
     char* argument[2];
@@ -53,8 +59,7 @@ void parser(FILE *open, FILE *write, segment_A *s1){
     }
 
     char line[256];
-    segment_B *s2 = createSegment_B("basic", s1, value);
-    addSegment_B(s2);
+    addSegment_B(&s2);
 
     while (fgets(line, sizeof(line), open) != NULL) {
             commandtype c_word;
@@ -70,9 +75,15 @@ void parser(FILE *open, FILE *write, segment_A *s1){
             char *token = strtok(line, " ");  // 첫 번째 토큰 얻기
             c_word = find_commandtype(token);
 
-            if( (c_word == C_FUNCTION)  && 0 ){
+            if( c_word == C_FUNCTION ){
+                token = strtok(NULL, " ");
                 segment_B *s2 = createSegment_B(token, s1, value);
-                addSegment_B(s2);
+                addSegment_B(&s2);
+                value = value + 50;
+            }
+            else{
+                segment_B *s2 = createSegment_B("basic", s1, value);
+                addSegment_B(&s2);
                 value = value + 50;
             }
 
@@ -290,6 +301,16 @@ void parser(FILE *open, FILE *write, segment_A *s1){
                         exit(1);
                     }
                     break;
+                case C_GOTO :
+                    
+                case C_LABEL :
+                case C_IFGOTO :
+                case C_CALL :
+                case C_FUNCTION :
+                    function_name *current = funcList;
+                    add(s1, current);
+                    printf("ADD Result : %d\n", s1->RAM[(current->sp)-1]);
+                case C_RETURN :
                 default : 
                     break;
             }
@@ -324,6 +345,12 @@ commandtype find_commandtype(char *token)
     }
     else if (strcmp(token, "and") == 0 || strcmp(token, "or") == 0 || strcmp(token, "not") == 0) {
         c_word = C_ARITHMEIC;
+    }
+    else if (strcmp(token, "if-goto") == 0) {
+        c_word = C_IFGOTO;
+    }
+    else if (strcmp(token, "function") == 0){
+        c_word = C_FUNCTION;
     }
     else {
         printf("Unknown command: %s\n", token);
