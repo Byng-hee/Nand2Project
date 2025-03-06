@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-
 segment_B *funcList_head = NULL;
 segment_B *funcList_tail = NULL;
 segment_B* createSegment_B(const char* name, segment_A* s1, int value){
@@ -43,9 +42,23 @@ void free_segment(segment_B *funcList){
         current = nextNode;  // 다음 노드로 이동
     }
 }
+segment_B* findfunc(const char* name){
+    segment_B* current = funcList_head;
+    segment_B* nextNode = NULL;
+
+    while (current != NULL) {
+        if ( strcmp(current->name, name) == 0 ) {
+            return current;
+        }
+        nextNode = current->next;  // 다음 노드 저장
+        current = nextNode;  // 다음 노드로 이동
+    }
+}
 
 
 void parser(FILE *open, FILE *write, segment_A* s1){
+    segment_B *current_seg = NULL;
+
     int value = 10;
 
     char* argument[2];
@@ -59,7 +72,6 @@ void parser(FILE *open, FILE *write, segment_A* s1){
     }
 
     char line[256];
-    addSegment_B(&s2);
 
     while (fgets(line, sizeof(line), open) != NULL) {
             commandtype c_word;
@@ -79,11 +91,13 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                 token = strtok(NULL, " ");
                 segment_B *s2 = createSegment_B(token, s1, value);
                 addSegment_B(&s2);
+                current_seg = s2;
                 value = value + 50;
             }
             else{
                 segment_B *s2 = createSegment_B("basic", s1, value);
                 addSegment_B(&s2);
+                current_seg = s2;
                 value = value + 50;
             }
 
@@ -93,7 +107,7 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                         token = strtok(NULL, " ");  // 공백 기준으로 다음 토큰 얻기
                         argument[i++] = token;
                     }
-                    push(argument[0], argument[1], s1, funcList);
+                    push(argument[0], argument[1], s1, current_seg);
                     fprintf(write, "@%d\n", atoi(argument[1]));
                     fprintf(write, "D=A\n");
                     fprintf(write, "@SP\n");
@@ -107,7 +121,7 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                         token = strtok(NULL, " ");  // 공백 기준으로 다음 토큰 얻기
                         argument[i++] = token;
                     }
-                    pop(argument[0], argument[1], s1, funcList);
+                    pop(argument[0], argument[1], s1, current_seg);
                     fprintf(write, "@%d\n", atoi(argument[1]));
                     fprintf(write, "D=A\n");
                     fprintf(write, "@ARG\n");
@@ -124,10 +138,9 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                     fprintf(write, "M=D\n");
                     break;
                 case C_ARITHMEIC :
-                    if ( strcmp(token, "add") == 0 ){
-                        segment_B *current = funcList;
-                        add(s1, current);
-                        printf("ADD Result : %d\n", s1->RAM[(current->sp)-1]);
+                    if ( strcmp(token, "add") == 0 ) {
+                        add(s1, current_seg);
+                        printf("ADD Result : %d\n", s1->RAM[(current_seg->sp)-1]);
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M-1\n");
                         fprintf(write, "A=M\n");
@@ -140,9 +153,8 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M+1\n");
                     }
-                    else if( strcmp(token, "sub") == 0 ){
-                        segment_B *current = funcList;
-                        sub(s1, current);
+                    else if( strcmp(token, "sub") == 0 ) {
+                        sub(s1, current_seg);
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M-1\n");
                         fprintf(write, "A=M\n");
@@ -155,9 +167,8 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M+1\n");
                     }
-                    else if( strcmp(token, "neg") == 0 ){
-                        segment_B *current = funcList;
-                        neg(s1, current);
+                    else if( strcmp(token, "neg") == 0 ) {
+                        neg(s1, current_seg);
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M-1\n");
                         fprintf(write, "A=M\n");
@@ -167,9 +178,8 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M+1\n");
                     }
-                    else if( strcmp(token, "and") == 0 ){
-                        segment_B *current = funcList;
-                        and(s1, current);
+                    else if( strcmp(token, "and") == 0 ) {
+                        and(s1, current_seg);
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M-1\n");
                         fprintf(write, "A=M\n");
@@ -181,9 +191,8 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M+1\n");
                     }
-                    else if( strcmp(token, "or") == 0 ){
-                        segment_B *current = funcList;
-                        or(s1, current);
+                    else if( strcmp(token, "or") == 0 ) {
+                        or(s1, current_seg);
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M-1\n");
                         fprintf(write, "A=M\n");
@@ -195,22 +204,20 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M+1\n");
                     }
-                    else if( strcmp(token, "not") == 0 ){
-                        segment_B *current = funcList;
-                        not(s1, current);
+                    else if( strcmp(token, "not") == 0 ) {
+                        not(s1, current_seg);
                         fprintf(write, "@SP\n");
                         fprintf(write, "A=M-1\n");
                         fprintf(write, "M=!M\n");
                     }
-                    else{
+                    else {
                         printf("NOT RUN!!\n");
                         exit(1);
                     }
                     break;
                 case C_IF :
-                    if( strcmp(token, "eq") == 0 ){
-                        segment_B *current = funcList;
-                        eq(s1, current);
+                    if( strcmp(token, "eq") == 0 ) {
+                        eq(s1, current_seg);
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M-1\n");
                         fprintf(write, "A=M\n");
@@ -238,9 +245,8 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                         
                     }
                     else if( strcmp(token, "gt") == 0 ){
-                        segment_B *current = funcList;
-                        gt(s1, current);
-                        eq(s1, current);
+                        gt(s1, current_seg);
+                        eq(s1, current_seg);
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M-1\n");
                         fprintf(write, "A=M\n");
@@ -268,9 +274,8 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                         
                     }
                     else if( strcmp(token, "lt") == 0 ){
-                        segment_B *current = funcList;
-                        lt(s1, current);
-                        eq(s1, current);
+                        lt(s1, current_seg);
+                        eq(s1, current_seg);
                         fprintf(write, "@SP\n");
                         fprintf(write, "M=M-1\n");
                         fprintf(write, "A=M\n");
@@ -302,21 +307,37 @@ void parser(FILE *open, FILE *write, segment_A* s1){
                     }
                     break;
                 case C_GOTO :
-                    
+                    token = strtok(NULL, " ");
+                    fprintf(write, "@%s", token);
+                    fprintf(write, "0;JMP");
+                    break;
                 case C_LABEL :
+                    fprintf(write, "(%s)", token);
+                    break;
                 case C_IFGOTO :
+                    token = strtok(NULL, " ");
+                    fprintf(write, "@SP");
+                    fprintf(write, "M=M-1");
+                    fprintf(write, "A=M");
+                    fprintf(write, "D=M");
+                    fprintf(write, "@%s", token);
+                    fprintf(write, "D;JMP");
+                    break;
                 case C_CALL :
-                case C_FUNCTION :
-                    function_name *current = funcList;
-                    add(s1, current);
-                    printf("ADD Result : %d\n", s1->RAM[(current->sp)-1]);
+                    token = strtok(NULL, " ");
+                    if(!findfunc(token)){
+                        current_seg = findfunc(token);
+                    }
+                    else {
+                        printf("NO FUNCTION NAME!!");
+                    }
+                    break;
                 case C_RETURN :
                 default : 
                     break;
             }
     }
-    free_segment(funcList);
-    
+    free_segment(funcList_head);
 }
 
 commandtype find_commandtype(char *token)
