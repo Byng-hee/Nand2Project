@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "function.h"
 #include "parser.h"
 //READ FILE
@@ -20,8 +21,21 @@
 //실행파일 내의 함수는 선언된 후에 argument,local,this,that,pointer의 공간을 생성해야한다
 
 int main(int argc, char *argv[]){
+    segment_A *s1 = (segment_A*)malloc(sizeof(segment_A));
+    // 나중에 Sys.init 함수를 호출해서 해결할것(아마도.. 책에서 이거부르라던데 나도 먼지 몰라.. 무서워)
+    s1->RAM[0] = 256; // SP를 RAM[256]을 가리키게 만듦.
+    s1->SP = 256;   // SP를 RAM[256]을 가리키게 만듦.
+    s1->LCL = 256;
+    s1->ARG = 256;
+    s1->THAT = 0;
+    s1->THIS = 0;
+    s1->STATIC = 16;    // STATIC의 범위는 16 - 255 까지의 범위를 가진다.
+    s1->TEMP = 5;
+    s1->POINTER = 3;
 
     char* outputFileName = make_outputfilename(argv[1]);
+    s1->staticName = outputFileName;
+    strcat(outputFileName, ".asm");
 
     // 파일을 읽기 모드로 열기 (생성)
     FILE *assembely_file = fopen(argv[1], "r");
@@ -33,15 +47,6 @@ int main(int argc, char *argv[]){
         perror("machine_language_file && assembely_file open failure");
         exit(1);
     }
-
-    segment_A *s1 = (segment_A*)malloc(sizeof(segment_A));
-    // 나중에 Sys.init 함수를 호출해서 해결할것(아마도.. 책에서 이거부르라던데 나도 먼지 몰라.. 무서워)
-    s1->RAM[0] = 256; // SP를 RAM[256]을 가리키게 만듦.
-    s1->SP = 256;   // SP를 RAM[256]을 가리키게 만듦.
-    s1->LCL = 0;
-    s1->ARG = 0;
-    s1->THAT = 0;
-    s1->THIS = 0;
     
     parser(assembely_file,machine_language_file, s1);
 
